@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07070a">
+<title>APK Package Changer</title>
+<style>
+:root{--bg:#07070a;--bg2:#0d0d12;--card:#14141b;--line:rgba(255,255,255,.1);--txt:#e7e7ee;--mut:#9a9aab;--p:#8b5cf6;--b:#3b82f6;--e:#22d3ee;--ok:#34d399;--bad:#fca5a5;--warn:#fde68a}
+*{box-sizing:border-box}
+html,body{margin:0;background:linear-gradient(#07070a,#0d0d12) fixed;color:var(--txt);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:680px;margin:0 auto;padding:32px 16px 64px}
+header{text-align:center;margin-bottom:24px}
+.logo{width:56px;height:56px;border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--p),var(--b));box-shadow:0 8px 24px rgba(139,92,246,.3)}
+h1{margin:0;font-size:28px;letter-spacing:-.02em}
+header p{margin:4px 0 0;color:var(--mut)}
+ol.steps{list-style:none;display:flex;justify-content:space-between;gap:4px;padding:0;margin:0 0 24px;font-size:11px}
+ol.steps li{flex:1;text-align:center;color:#71717a}
+ol.steps .n{display:flex;width:28px;height:28px;margin:0 auto 4px;border-radius:50%;border:1px solid rgba(255,255,255,.15);align-items:center;justify-content:center;font-weight:600;font-size:12px}
+ol.steps li.cur{color:#e4e4e7}ol.steps li.cur .n{border-color:var(--e);color:var(--e)}
+ol.steps li.done{color:#e4e4e7}ol.steps li.done .n{border-color:transparent;background:linear-gradient(135deg,var(--p),var(--b));color:#fff}
+.card{background:rgba(20,20,27,.85);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:16px;animation:rise .35s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+h2{margin:0 0 12px;font-size:16px}
+[hidden]{display:none!important}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed rgba(255,255,255,.15);border-radius:12px;padding:40px 16px;text-align:center;cursor:pointer;transition:.2s}
+.drop:hover{border-color:rgba(139,92,246,.6)}.drop.over{border-color:var(--e);background:rgba(34,211,238,.05)}
+.drop small{color:#71717a}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.bar{height:8px;border-radius:99px;background:#2a2a38;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--p),var(--b));transition:width .2s}
+.row{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px}
+.row:last-child{border:0}.row dt{color:var(--mut)}.row dd{margin:0;text-align:right;font-weight:500;word-break:break-all}
+code{font-family:ui-monospace,Menlo,Consolas,monospace}.e{color:var(--e)}.ok{color:var(--ok)}
+label{display:block;font-size:14px;color:#d4d4d8;margin-bottom:4px}
+.inp{display:flex;gap:8px}
+input[type=text],input[type=password],input[type=url]{flex:1;min-width:0;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:12px;font:14px ui-monospace,Menlo,Consolas,monospace;outline:none}
+input:focus{border-color:var(--p)}
+button,.btn{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--line);background:transparent;color:#d4d4d8;padding:10px 14px;font-size:14px}
+button:hover{background:rgba(255,255,255,.05)}button:disabled{opacity:.4;cursor:not-allowed}
+.primary{display:block;width:100%;margin-top:16px;padding:14px;border:0;font-weight:600;color:#fff;text-align:center;text-decoration:none;background:linear-gradient(90deg,var(--p),var(--b));box-shadow:0 8px 20px rgba(139,92,246,.2)}
+.primary:hover:not(:disabled){filter:brightness(1.1);background:linear-gradient(90deg,var(--p),var(--b))}
+.msg{min-height:20px;margin:8px 0 0;font-size:14px}.msg.bad{color:var(--bad)}.msg.good{color:var(--ok)}.msg.hint{color:var(--mut)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;font-size:12px}
+@media(max-width:480px){.cmp{grid-template-columns:1fr}}
+.cmp div{background:var(--bg2);border-radius:8px;padding:12px;word-break:break-all}.cmp b{display:block;color:#71717a;font-weight:400;margin-bottom:4px}
+.note{margin-top:16px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.05);border-radius:12px;padding:12px;font-size:12px;color:var(--warn)}
+.err{border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.1);color:#fecaca;border-radius:12px;padding:12px;font-size:14px;margin-bottom:16px}
+ul.st{list-style:none;padding:0;margin:0;display:grid;gap:8px;font-size:14px}
+ul.st li{display:flex;align-items:center;gap:12px;color:#71717a}
+ul.st .d{width:20px;height:20px;border-radius:50%;background:#2a2a38;font-size:10px;display:flex;align-items:center;justify-content:center;color:#71717a}
+ul.st li.on{color:#f4f4f5}ul.st li.on .d{background:var(--e);color:#000;animation:pulse 1s infinite}
+ul.st li.dn{color:#f4f4f5}ul.st li.dn .d{background:#10b981;color:#fff}
+ul.st li.fl .d{background:#ef4444;color:#fff}
+@keyframes pulse{50%{opacity:.5}}
+.two{display:flex;gap:8px;margin-top:12px}.two button{flex:1}
+details{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}details:last-of-type{border:0}
+summary{cursor:pointer;font-size:14px;font-weight:500}details p{margin:4px 0 0;font-size:14px;color:var(--mut)}
+footer{text-align:center;margin-top:32px;font-size:12px;color:#71717a}
+.conn{font-size:12px;color:#71717a}.conn summary{font-weight:400;font-size:12px}.conn .inp{margin-top:8px}
+.good-card{border-color:rgba(16,185,129,.3)}
+:focus-visible{outline:2px solid var(--e);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></div>
+    <h1>APK Package Changer</h1>
+    <p>Change your APK package name and download the rebuilt app.</p>
+  </header>
+
+  <details class="conn" id="conn">
+    <summary>Server connection</summary>
+    <label for="base" style="margin-top:8px">Backend URL (leave empty if this page is served by the backend)</label>
+    <div class="inp"><input id="base" type="url" placeholder="https://your-server.example.com" autocomplete="off"></div>
+    <label for="tok" style="margin-top:8px">Access token (only if the server requires one)</label>
+    <div class="inp"><input id="tok" type="password" autocomplete="off"></div>
+    <div class="msg" id="connmsg" aria-live="polite"></div>
+  </details>
+
+  <ol class="steps" id="steps" aria-label="Progress"></ol>
+  <div id="error" class="err" role="alert" hidden></div>
+
+  <section class="card" id="s-upload">
+    <h2>1. Upload APK</h2>
+    <label class="drop" id="drop" for="file">
+      <span style="font-weight:500">Tap to choose an APK, or drag and drop</span>
+      <small id="limit">.apk only</small>
+      <input class="sr" id="file" type="file" accept=".apk,application/vnd.android.package-archive">
+    </label>
+    <div id="up" hidden style="margin-top:16px" aria-live="polite">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut)"><span id="upname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><span id="uppct"></span></div>
+      <div class="bar"><i id="upbar"></i></div>
+    </div>
+  </section>
+
+  <section class="card" id="s-info" hidden>
+    <h2>2. Detected package</h2>
+    <dl style="margin:0" id="info"></dl>
+  </section>
+
+  <section class="card" id="s-new" hidden>
+    <h2>3. New package name</h2>
+    <label for="pkg">New package name (application ID)</label>
+    <div class="inp">
+      <input id="pkg" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="url" placeholder="com.yourname.customapp" aria-describedby="pmsg">
+      <button type="button" id="reset">Reset</button>
+    </div>
+    <p class="msg hint" id="pmsg" aria-live="polite"></p>
+    <div class="cmp"><div><b>Original</b><code id="cmpo"></code></div><div><b>New</b><code class="e" id="cmpn">—</code></div></div>
+    <div class="note">The rebuilt APK is signed with a different key, so it cannot update the original app and usually needs a fresh install. It may stop working if the app checks its signature or package name.</div>
+    <button class="primary" id="go" disabled>Change Package Name</button>
+    <button type="button" id="other" style="width:100%;margin-top:8px;border:0;color:var(--mut)">Choose a different APK</button>
+  </section>
+
+  <section class="card" id="s-prog" hidden>
+    <h2>4. Rebuild &amp; sign</h2>
+    <ul class="st" id="stages" aria-live="polite"></ul>
+    <div id="fail" hidden>
+      <div class="err" role="alert" style="margin:16px 0 0" id="failmsg"></div>
+      <div class="two"><button id="retry">Edit name &amp; retry</button><button id="again1">Start again</button></div>
+    </div>
+  </section>
+
+  <section class="card good-card" id="s-done" hidden>
+    <h2 class="ok">✓ Success: APK rebuilt and verified</h2>
+    <dl style="margin:0" id="res"></dl>
+    <div id="warns"></div>
+    <a class="btn primary" id="dl" href="#" style="font-size:18px">Download Modified APK</a>
+    <p style="text-align:center;font-size:12px;color:#71717a;margin:8px 0 0" id="dlnote"></p>
+    <button id="again2" style="width:100%;margin-top:12px">Start Again</button>
+  </section>
+
+  <section class="card" style="margin-top:32px">
+    <h2>FAQ &amp; install notes</h2>
+    <details><summary>Will the modified app update the original?</summary><p>No. The new package name and a different signing key mean Android treats it as a separate app. Expect a fresh install with no data carried over.</p></details>
+    <details><summary>Can both apps be installed together?</summary><p>Often yes, when the application IDs differ. Apps that share fixed identities (accounts, content providers, hardcoded package names) can still conflict.</p></details>
+    <details><summary>Why might the app crash or misbehave?</summary><p>Signature checks, licensing, integrity verification (e.g. Play Integrity), hardcoded package names and server-side restrictions can all break after modification.</p></details>
+    <details><summary>Which files are unsupported?</summary><p>Split APKs, app bundles (AAB/XAPK/APKS), and heavily protected or obfuscated APKs may be rejected. Nothing is returned unless the result passes verification.</p></details>
+    <details><summary>Only use APKs you are allowed to modify.</summary><p>Use this on your own apps or apps whose license permits modification. Don't redistribute modified apps you don't own.</p></details>
+    <p style="font-size:12px;color:#71717a;margin:12px 0 0">Compatibility is never guaranteed. Always test the modified app.</p>
+  </section>
+
+  <footer>
+    <p id="priv">Privacy: uploaded and generated files are stored privately and deleted automatically after the retention period. APKs are never executed on the server.</p>
+    <p>APK Package Changer v<span id="ver">1.0.0</span></p>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var STEPS=["Upload APK","Detect package","New package name","Rebuild & sign","Download"];
+var STAGES=[["queued","Queued"],["analyzing","Analyzing APK"],["updating_metadata","Updating package metadata"],["rebuilding","Rebuilding APK"],["signing","Signing APK"],["verifying","Verifying output"]];
+var JAVA_KW=new Set("abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for goto if implements import instanceof int interface long native new package private protected public return short static strictfp super switch synchronized this throw throws transient try void volatile while true false null".split(" "));
+var S={cfg:null,up:null,job:null,timer:null,busy:false};
+
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k)||"";localStorage.setItem(k,v)}catch(e){return ""}}
+function base(){return ($("base").value||"").trim().replace(/\/+$/,"")}
+function tok(){return $("tok").value||""}
+function esc(s){var d=document.createElement("div");d.textContent=s==null?"":String(s);return d.innerHTML}
+function fmt(b){return b>=1048576?(b/1048576).toFixed(1)+" MB":Math.max(1,Math.round(b/1024))+" KB"}
+function showErr(m){var e=$("error");e.hidden=!m;e.textContent=m||""}
+
+function validate(n){
+  if(!n)return null;
+  if(/\s/.test(n))return"Package name cannot contain spaces.";
+  if(n.length>255)return"Package name is too long.";
+  var p=n.split(".");
+  if(p.length<2)return"Use at least two dot-separated parts, e.g. com.example.app.";
+  for(var i=0;i<p.length;i++){
+    if(p[i]==="")return"No empty parts (check for '..' or a leading/trailing dot).";
+    if(!/^[A-Za-z][A-Za-z0-9_]*$/.test(p[i]))return/^[0-9_]/.test(p[i])?"Each part must start with a letter ('"+p[i]+"').":"'"+p[i]+"' has invalid characters. Use letters, digits and underscores.";
+    if(JAVA_KW.has(p[i].toLowerCase()))return"'"+p[i]+"' is a reserved Java keyword."
+  }
+  return null;
+}
+
+function api(path,opts){
+  opts=opts||{};opts.headers=Object.assign({"X-Access-Token":tok()},opts.headers||{});
+  return fetch(base()+path,opts).then(function(r){
+    return r.json().catch(function(){return null}).then(function(b){
+      if(!r.ok){var e=b&&b.error;throw new Error(e&&e.message||(r.status>=500?"The server is unavailable.":"Request failed."))}
+      return b;
+    });
+  },function(){throw new Error("The server is unavailable. Check the backend URL and your connection.")});
+}
+
+function loadCfg(){
+  return api("/api/config").then(function(c){
+    S.cfg=c;$("limit").textContent=".apk only · max "+c.max_upload_mb+" MB";$("ver").textContent=c.version;
+    $("priv").textContent="Privacy: uploaded and generated files are stored privately and deleted automatically after "+c.retention_minutes+" minutes. APKs are never executed on the server.";
+    $("connmsg").className="msg good";$("connmsg").textContent="Connected to server v"+c.version+(c.access_token_required?" (access token required)":"");
+    showErr("");
+  }).catch(function(e){S.cfg=null;$("connmsg").className="msg bad";$("connmsg").textContent=e.message;showErr(e.message)});
+}
+
+function render(){
+  var step=S.job&&S.job.status==="completed"?5:S.job?4:S.up?3:S.busy?1:0;
+  $("steps").innerHTML=STEPS.map(function(s,i){
+    var done=i<step,cur=i===step||(step===5&&i===4);
+    return'<li class="'+(done?"done":cur?"cur":"")+'"'+(cur?' aria-current="step"':"")+'><span class="n">'+(done?"✓":i+1)+'</span>'+esc(s)+'</li>';
+  }).join("");
+  var done=S.job&&S.job.status==="completed";
+  $("s-upload").hidden=!!S.up;
+  $("s-info").hidden=!S.up||done;
+  $("s-new").hidden=!S.up||done;
+  $("s-prog").hidden=!S.job||done;
+  $("s-done").hidden=!done;
+  $("pkg").disabled=!!S.job;$("reset").disabled=!!S.job||!$("pkg").value;$("other").hidden=!!S.job;
+  checkPkg();
+}
+
+function checkPkg(){
+  var v=$("pkg").value.trim(),err=validate(v),same=S.up&&v===S.up.info.package,m=$("pmsg");
+  $("cmpn").textContent=v||"—";
+  if(!v){m.className="msg hint";m.textContent="Letters, digits and underscores; at least two dot-separated parts."}
+  else if(err){m.className="msg bad";m.textContent=err}
+  else if(same){m.className="msg bad";m.textContent="The new name must differ from the original."}
+  else{m.className="msg good";m.textContent="Looks valid."}
+  $("pkg").setAttribute("aria-invalid",!!(err||same));
+  $("go").disabled=!(S.up&&v&&!err&&!same&&!S.job);
+  $("reset").disabled=!!S.job||!v;
+}
+
+function row(k,v){return'<div class="row"><dt>'+esc(k)+'</dt><dd>'+v+'</dd></div>'}
+
+function handleFile(f){
+  if(!f)return;showErr("");
+  if(!/\.apk$/i.test(f.name))return showErr("Only .apk files are supported.");
+  if(S.cfg&&f.size>S.cfg.max_upload_mb*1048576)return showErr("File exceeds the "+S.cfg.max_upload_mb+" MB limit.");
+  S.busy=true;$("up").hidden=false;$("upname").textContent=f.name;$("upbar").style.width="0";$("uppct").textContent="Uploading 0%";render();
+  var x=new XMLHttpRequest();x.open("POST",base()+"/api/upload");x.setRequestHeader("X-Access-Token",tok());
+  x.upload.onprogress=function(e){if(e.lengthComputable){var p=Math.round(e.loaded/e.total*100);$("upbar").style.width=p+"%";$("uppct").textContent=p>=100?"Validating…":"Uploading "+p+"%"}};
+  function fin(){S.busy=false;$("up").hidden=true;render()}
+  x.onerror=function(){showErr("The server is unavailable. Check the backend URL and your connection.");fin()};
+  x.onload=function(){
+    var b=null;try{b=JSON.parse(x.responseText)}catch(e){}
+    if(x.status>=200&&x.status<300&&b){
+      S.up=b;var i=b.info;
+      $("info").innerHTML=row("File",esc(b.file_name)+" ("+fmt(b.size)+")")+row("Upload status",'<span class="ok">Validated</span>')+
+        row("Original package name",'<code class="e">'+esc(i.package)+'</code>')+row("Application name",esc(i.label||"—"))+
+        row("Version",esc(i.version_name?i.version_name+" ("+(i.version_code||"?")+")":(i.version_code||"—")))+row("Minimum Android SDK",esc(i.min_sdk||"—"));
+      $("cmpo").textContent=i.package;
+    }else showErr(b&&b.error&&b.error.message||"Upload failed.");
+    fin();
+  };
+  var fd=new FormData();fd.append("file",f);x.send(fd);
+}
+
+function poll(){
+  clearInterval(S.timer);
+  S.timer=setInterval(function(){
+    api("/api/jobs/"+S.job.id).then(function(j){S.job=j;paint();if(j.status==="completed"||j.status==="failed")clearInterval(S.timer)})
+      .catch(function(e){showErr(e.message)});
+  },1000);
+}
+
+function paint(){
+  var j=S.job;if(!j)return render();
+  var cur=Math.max(0,STAGES.map(function(s){return s[0]}).indexOf(j.stage));
+  $("stages").innerHTML=STAGES.map(function(s,i){
+    var cls=j.status==="failed"&&i===cur?"fl":i<cur?"dn":i===cur?"on":"";
+    return'<li class="'+cls+'"><span class="d">'+(cls==="fl"?"!":cls==="dn"?"✓":i+1)+'</span>'+esc(s[1])+(i===cur&&(j.status==="running"||j.status==="queued")?' <small style="color:#71717a">'+j.status+'</small>':"")+'</li>';
+  }).join("");
+  $("fail").hidden=j.status!=="failed";
+  if(j.status==="failed")$("failmsg").innerHTML="<strong style='display:block'>Processing failed</strong>"+esc(j.error&&j.error.message||"Unknown error");
+  if(j.status==="completed"&&j.result){
+    var r=j.result;
+    $("res").innerHTML=row("Original package","<code>"+esc(r.original_package)+"</code>")+row("New package",'<code class="e">'+esc(r.new_package)+'</code>')+
+      row("Original size",fmt(r.original_size))+row("Modified size",fmt(r.new_size))+row("Signature",'<span class="ok">Verified ('+esc(r.signature.schemes.join(", "))+')</span>');
+    $("warns").innerHTML=(r.warnings||[]).map(function(w){return'<div class="note">'+esc(w)+'</div>'}).join("");
+    $("dl").href=base()+j.download_url;$("dl").setAttribute("download",j.filename||"modified.apk");
+    $("dlnote").textContent=(j.filename||"")+" · link expires in "+(S.cfg?S.cfg.retention_minutes:30)+" minutes";
+  }
+  render();
+}
+
+function reset(){
+  clearInterval(S.timer);
+  if(S.up)api("/api/uploads/"+S.up.upload_id,{method:"DELETE"}).catch(function(){});
+  S.up=null;S.job=null;$("pkg").value="";$("file").value="";showErr("");render();
+}
+
+$("file").addEventListener("change",function(e){handleFile(e.target.files[0])});
+var d=$("drop");
+d.addEventListener("dragover",function(e){e.preventDefault();d.classList.add("over")});
+d.addEventListener("dragleave",function(){d.classList.remove("over")});
+d.addEventListener("drop",function(e){e.preventDefault();d.classList.remove("over");handleFile(e.dataTransfer.files[0])});
+$("pkg").addEventListener("input",function(){this.value=this.value.trim();checkPkg()});
+$("reset").addEventListener("click",function(){$("pkg").value="";checkPkg();$("pkg").focus()});
+$("go").addEventListener("click",function(){
+  var v=$("pkg").value.trim();if(!S.up||validate(v)||v===S.up.info.package)return;showErr("");
+  api("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({upload_id:S.up.upload_id,new_package:v})})
+    .then(function(j){S.job=j;paint();poll()}).catch(function(e){showErr(e.message)});
+});
+$("retry").addEventListener("click",function(){S.job=null;render()});
+["again1","again2","other"].forEach(function(i){$(i).addEventListener("click",reset)});
+$("base").value=store("apk_base");$("tok").value=(function(){try{return sessionStorage.getItem("apk_tok")||""}catch(e){return""}})();
+function conn(){store("apk_base",base());try{sessionStorage.setItem("apk_tok",tok())}catch(e){}loadCfg()}
+$("base").addEventListener("change",conn);$("tok").addEventListener("change",conn);
+if(location.protocol==="file:"&&!base())$("conn").open=true;
+render();loadCfg();
+})();
+</script>
+</body>
+</html>
